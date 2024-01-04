@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h1>Proyecto Final</h1>
+    <p class="lead">Este proyecto se centra en la transferencia de archivos</p>
+    <p><a onclick="cargarArchivos()" class="btn btn-primary btn-large">Buscar Archivos &raquo;</a></p>
+</div>
+
+<div class="row">
+    <div class="col-md-6" id="mostrarArchivos" style="display:none">
+        <h2>Descargar archivo</h2>
+        <p>
+            Selecciona y descarga un archivo del Servidor.
+        </p>
+        <p><a class="btn btn-default" onclick="cargarArchivos()">Buscar Archivos &raquo;</a></p>
+        
+    </div>
+    <div class="col-md-6">
+        <h2>Pagos</h2>
+        <p>Aqui puedes descargar el comprobante de pago.</p>
+        <p><a class="btn btn-default" onclick="generarComprobante()">Dercargar PDF &raquo;</a></p>
+    </div>
+</div>
+
+
+<script>
+    function cargarArchivos() {
+        // Ruta para solicitar los documentos disponibles
+        var ruta = '/server/documentos';
+        var opciones = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        };
+
+        // Realizar solicitud HTTP mediante fetch
+        fetch(ruta, opciones)
+            .then(response => response.json())
+            .then(data => {mostrarArchivos(data.archivos)})
+            .catch(error => console.error('Error al cargar archivos:', error));
+
+    }
+    function mostrarArchivos(archivos) {
+        console.log(archivos)
+        // Obtener el div por su ID
+        var divOculto = document.getElementById('mostrarArchivos');
+
+        // Hacer visible el div
+        divOculto.style.display = 'block';
+
+        divOculto.innerHTML = '<h2>Archivos Disponibles</h2>';
+        //Muestra los archivos disponibles
+        for (var i = 0; i < archivos.length; i++) {
+            divOculto.innerHTML += '<p>' + archivos[i].nombre + ' - ' + archivos[i].tamano + 'bytes <button><a onclick=descargar(' + archivos[i].id + 'class="btn btn-default")>Descargar</a></button> </p>';
+        }
+    }
+    function descargar(id) {
+        console.log(id)
+        // Ruta para descargar documento
+        var ruta = '/server/descarga/'+id;
+        var opciones = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        };
+
+        // Realizar solicitud HTTP mediante fetch
+        fetch(ruta, opciones)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Enviar a descargas')
+                window.location.href = "/downloads";
+            })
+            .catch(error => console.error('Error al cargar archivos:', error));
+    }
+    function generarComprobante() {
+        var ruta = '/pagos/comprobante';
+        var opciones = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        };
+        // Realizar solicitud HTTP
+        fetch(ruta, opciones)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Enviar a descargas')
+                window.location.href = "/downloads";
+            })
+            .catch(error => console.error('Error al generarr comprobante de pago:', error));
+    }
+</script>
+
+{% endblock %}
